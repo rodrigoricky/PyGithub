@@ -113,7 +113,7 @@ class HTTPSRequestsConnectionClass:
             pool_connections=self.pool_size,
             pool_maxsize=self.pool_size,
         )
-        self.session.mount("https://", self.adapter)
+           self.session.mount("https://", self.adapter)
 
     def request(self, verb, url, input, headers):
         self.verb = verb
@@ -124,12 +124,23 @@ class HTTPSRequestsConnectionClass:
     def getresponse(self):
         verb = getattr(self.session, self.verb.lower())
         url = f"{self.protocol}://{self.host}:{self.port}{self.url}"
+        verb = getattr(self.session, verb.lower())
+        url = f"{self.protocol}://{self.host}:{self.port}{url}"
         r = verb(
             url,
             headers=self.headers,
             data=self.input,
+            headers=headers,
+            data=input,
             timeout=self.timeout,
             verify=self.verify,
+            allow_redirects=False,
+        )
+        return RequestsResponse(r)
+        return RequestsResponse(r)       
+
+    def close(self):
+        return
             allow_redirects=False,
         )
         return RequestsResponse(r)
@@ -155,18 +166,28 @@ class HTTPRequestsConnectionClass:
         self.protocol = "http"
         self.timeout = timeout
         self.verify = kwargs.get("verify", True)
-        self.session = requests.Session()
+          self.session.mount("http://", self.adapter)
 
-        if retry is None:
-            self.retry = requests.adapters.DEFAULT_RETRIES
-        else:
-            self.retry = retry
+    def request(self, verb, url, input, headers):
+        self.verb = verb
+        self.url = url
+        self.input = input
+        self.headers = headers
 
-        if pool_size is None:
-            self.pool_size = requests.adapters.DEFAULT_POOLSIZE
-        else:
-            self.pool_size = pool_size
-
+    def getresponse(self):
+        verb = getattr(self.session, self.verb.lower())
+        url = f"{self.protocol}://{self.host}:{self.port}{self.url}"
+        verb = getattr(self.session, verb.lower())
+        url = f"{self.protocol}://{self.host}:{self.port}{url}"
+        r = verb(
+            url,
+            headers=self.headers,
+            data=self.input,
+            headers=headers,
+            data=input,
+            timeout=self.timeout,
+            verify=self.verify,
+            allow_redirects=False,
         self.adapter = requests.adapters.HTTPAdapter(
             max_retries=self.retry,
             pool_connections=self.pool_size,
